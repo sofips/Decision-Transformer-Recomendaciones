@@ -34,7 +34,7 @@ def create_dt_dataset(df_train, test=True, print_stats=True):
 
         returns_to_go[-1] = ratings[-1]
 
-        for t in reversed(range(len(ratings))-2):
+        for t in reversed(range(len(ratings)-1)):
             returns_to_go[t] = ratings[t] + returns_to_go[t + 1]
 
         timesteps = np.arange(len(items), dtype=np.int32)
