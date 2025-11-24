@@ -1,75 +1,80 @@
-#-------------------------------------------------------------
-# Pre-procesamiento de datos para usar Decision Transformers
-#--------------------------------------------------------------
 import numpy as np
+# ===================================================================
+# CÓDIGO DE REFERENCIA - Muestra el formato esperado
+# Los grupos deben implementar esto (o similar) en data_preprocessing.py
+# ===================================================================
 
-
-def create_dt_dataset(df_train, test=True, print_stats=True):
-    '''
-    Pre-procesamiento de datos para entrenar un Decision Transformer. 
-
-    Parametros:
-        df_train (pd.DataFrame): DataFrame con las columnas 'user_id', 'user_group', 'items', 'ratings'.
+def create_dt_dataset(df_train):
+    """
+    Convierte el dataset raw a formato Decision Transformer.
+    
+    Args:
+        df_train: DataFrame con columnas [user_id, user_group, items, ratings]
     
     Returns:
-        trajectories (list): Lista de diccionarios, cada uno representando una trayectoria de usuario. 
-        Cada diccionario contiene:
-            - 'items': array de numpy con los IDs de los items (películas) vistos por el usuario.
-            - 'ratings': array de numpy con las calificaciones dadas por el usuario. Matchea con 'items'.
-            - 'returns_to_go': array de numpy con los retornos futuros esperados.
-            - 'timesteps': pasos temporales.
-            - 'user_group': cluster o grupo (0-7) al que pertenece el usuario.
-    '''
-
+        trajectories: List[Dict] donde cada dict representa una trayectoria
+                      con las siguientes keys:
+            - 'items': numpy array de item IDs (secuencia completa)
+            - 'ratings': numpy array de ratings (secuencia completa)
+            - 'returns_to_go': numpy array con suma de rewards futuros desde cada timestep
+            - 'timesteps': numpy array con índices temporales [0, 1, 2, ..., T-1]
+            - 'user_group': int con el grupo del usuario (0-7)
+    
+    Ejemplo de salida:
+        [
+          {
+            'items': array([472, 97, 122, ...]),      # 112 elementos
+            'ratings': array([4., 3., 4., ...]),       # 112 elementos
+            'returns_to_go': array([450., 446., ...]), # 112 elementos (suma acumulada hacia adelante)
+            'timesteps': array([0, 1, 2, ...]),        # 112 elementos
+            'user_group': 2
+          },
+          ... # 16,000 trayectorias total
+        ]
+    """
     trajectories = []
-
-    # para cada usuario en el dataset
-    for user_id, user_data in df_train.iterrows():
-        items = user_data['items']
-        ratings = user_data['ratings']
-        user_group = user_data['user_group']
-
-        # calcular returns-to-go (RTG)
-        returns_to_go = np.zeros_like(ratings)
-
-        returns_to_go[-1] = ratings[-1]
-
-        for t in reversed(range(len(ratings)-1)):
-            returns_to_go[t] = ratings[t] + returns_to_go[t + 1]
-
-        timesteps = np.arange(len(items), dtype=np.int32)
-
-        # crear entrada de la trayectoria
+    
+    # Iterar sobre cada usuario
+    for idx, row in df_train.iterrows():
+        items = row['items']        # numpy array de item IDs
+        ratings = row['ratings']    # numpy array de ratings
+        group = row['user_group']   # int (0-7)
+        
+        # === PASO CLAVE: Calcular returns-to-go ===
+        # R̂_t = suma de rewards desde t hasta el final
+        # R̂_t = r_t + r_{t+1} + ... + r_T
+        
+        returns = np.zeros(len(ratings))
+        
+        # Último timestep: R̂_T = r_T
+        returns[-1] = ratings[-1]
+        
+        # Iterar hacia atrás: R̂_t = r_t + R̂_{t+1}
+        for t in range(len(ratings)-2, -1, -1):
+            returns[t] = ratings[t] + returns[t+1]
+        
+        # Ejemplo:
+        # ratings =  [4, 3, 5, 2, 1]
+        # returns = [15, 11, 8, 3, 1]  # 15=4+3+5+2+1, 11=3+5+2+1, etc.
+        
+        # Crear diccionario con toda la información
         trajectory = {
-            'items': items,
-            'ratings': ratings,
-            'returns_to_go': returns_to_go,
-            'timesteps': timesteps,
-            'user_group': user_group
+            'items': items,                        # Secuencia de películas
+            'ratings': ratings,                    # Ratings correspondientes
+            'returns_to_go': returns,              # R̂ para cada timestep
+            'timesteps': np.arange(len(items)),    # [0, 1, 2, ..., T-1]
+            'user_group': group                    # Cluster del usuario
         }
-
-        if test:
-            # Validar que las longitudes coincidan
-            if not (len(items) == len(ratings) == len(returns_to_go) == len(timesteps)):
-                raise ValueError(f"Las longitudes de los arrays no coinciden para el usuario {user_id}.")
-            # Chequear que la return-to-go en el paso 0 sea la suma total de ratings
-            if returns_to_go[0] != np.sum(ratings):
-                raise ValueError(f"El return-to-go inicial no coincide con la suma de ratings para el usuario {user_id}.")
-            # Chequear que la return-to-go en el último paso sea igual al último rating
-            if returns_to_go[-1] != ratings[-1]:
-                raise ValueError(f"El return-to-go final no coincide con el último rating para el usuario {user_id}.")
+        
         trajectories.append(trajectory)
-
-    if test:
-        if len(df_train['user_id']) != len(trajectories):
-            raise ValueError("El número de usuarios no coincide con el número de trayectorias generadas.")
-
-    if print_stats:
-        print(f"Número de trayectorias generadas: {len(trajectories)}")
-        lengths = [len(traj['items']) for traj in trajectories]
-        print(f"Longitud media de las trayectorias: {np.mean(lengths):.2f}")
-        print(f"Longitud máxima de las trayectorias: {np.max(lengths)}")
-        print(f"Longitud mínima de las trayectorias: {np.min(lengths)}")
-
+    
     return trajectories
 
+
+# === EJEMPLO DE USO ===
+# import pandas as pd
+# df_train = pd.read_pickle('data/train/netflix8_train.df')
+# trajectories = create_dt_dataset(df_train)
+# print(f"Total trayectorias: {len(trajectories)}")  # 16,000
+# print(f"Primera trayectoria keys: {trajectories[0].keys()}")
+# print(f"Returns-to-go del usuario 0: {trajectories[0]['returns_to_go'][:10]}")
