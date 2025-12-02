@@ -162,4 +162,8 @@ class DecisionTransformer(nn.Module):
                     if prev_type <= current_type:
                         mask[i, j] = 0
         
+<<<<<<< HEAD
         return mask
+=======
+        return mask
+>>>>>>> bf7d8c9 (modificaciones)
