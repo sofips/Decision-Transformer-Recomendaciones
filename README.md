@@ -6,7 +6,7 @@ Este proyecto implementa un sistema de recomendación basado en Decision Transfo
 
 La idea se basa en interpretar una sesión de interacción usuario–sistema como una trayectoria de un MDP y entrenar el DT para imitar comportamientos asociados a retornos altos. Además, el repositorio incluye una comparación con un código de referencia y versiones modificadas que introducen mejoras en embeddings, organización de secuencias y arquitectura de la cabeza de predicción.
 
-📁 Estructura del Proyecto
+📁 Estructura del repositorio
 ```text
 Decision-Transformer-Recomendaciones/
 ├── data
@@ -35,15 +35,11 @@ Decision-Transformer-Recomendaciones/
 
 El proyecto utiliza las siguientes librerías :
 
-Python 3.10+
-PyTorch
-NumPy
-Pandas
-Matplotlib
-scikit-learn
-tqdm
-seaborn
-tensorboard
+- Python 3.10+
+- PyTorch
+- NumPy
+- Pandas
+- Matplotlib
 
 ## 🚀 Instalación
 
