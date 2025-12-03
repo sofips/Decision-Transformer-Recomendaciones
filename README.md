@@ -44,7 +44,6 @@ El proyecto utiliza las siguientes librerías :
 
 El entorno completo puede instalarse utilizando el archivo `requirements.yml`.
 
-### **Crear el entorno con Conda**
 
 ```bash
 conda env create -f requirements.yml
