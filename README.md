@@ -6,7 +6,7 @@ Este proyecto implementa un sistema de recomendación basado en Decision Transfo
 
 La idea se basa en interpretar una sesión de interacción usuario–sistema como una trayectoria de un MDP y entrenar el DT para imitar comportamientos asociados a retornos altos. Además, el repositorio incluye una comparación con un código de referencia y versiones modificadas que introducen mejoras en embeddings, organización de secuencias y arquitectura de la cabeza de predicción.
 
-📁 ### Estructura del repositorio
+### 📁 Estructura del repositorio
 ```text
 Decision-Transformer-Recomendaciones/
 ├── data
@@ -30,7 +30,7 @@ Decision-Transformer-Recomendaciones/
     └── training
 ```
 
-## 🚀 Instalación
+### 🚀 Instalación
 
 El proyecto utiliza las siguientes librerías :
 
