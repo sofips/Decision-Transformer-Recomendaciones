@@ -1,5 +1,5 @@
 ## Decision Transformer para Sistemas de Recomendación
-#hline
+
 #### Trabajo realizado por Sofía Perón y Felipe Ávila para la materia Aprendizaje por Refuerzos en el marco de la Diplomatura en Ciencia de Datos (2025)
 
 Este proyecto implementa un sistema de recomendación basado en Decision Transformers (DTs) aplicado a un entorno offline de calificaciones de películas. El objetivo es evaluar si un modelo tipo Transformer, originalmente diseñado para modelar secuencias en NLP y posteriormente extendido al aprendizaje por refuerzo (RL), puede capturar patrones usuario–ítem de forma competitiva frente a métodos tradicionales de recomendación.
