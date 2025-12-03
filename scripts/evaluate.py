@@ -92,6 +92,8 @@ def evaluate_model_batched(
     """
     Evaluación batcheada y GPU-native para usuarios con longitudes distintas.
 
+
+    Reimplementamos la evaluación para ejecutar en gpu
     Args:
         model: Decision Transformer que acepta (states, actions, rtg, timesteps, groups)
         test_data: lista de dicts {'group': int, 'items': List[int], 'ratings': List[float]}
@@ -130,8 +132,8 @@ def evaluate_model_batched(
             rtg_val = (sum(hist_ratings) if target_return is None else float(target_return))
 
             states_list.append(hist_items)
-            actions_list.append(hist_items)   # en tu código original actions == states
-            rtg_list.append([rtg_val] * context_len)  # replicar por paso temporal si tu modelo espera RTG por paso
+            actions_list.append(hist_items)
+            rtg_list.append([rtg_val] * context_len)
             groups_list.append(group)
             targets_list.append(items[t])
 
@@ -150,7 +152,7 @@ def evaluate_model_batched(
     num_ks = len(k_list)
 
     # Precompute timesteps (se puede broadcastear por batch)
-    # Model en tu ejemplo aceptaba timesteps shape (batch, context_len)
+
     timesteps_single = T.arange(context_len, dtype=T.long, device=device).unsqueeze(0)  # (1, context_len)
 
     # 3) Acumuladores para métricas (mantener en GPU)
@@ -159,7 +161,6 @@ def evaluate_model_batched(
     mrr_sum = T.tensor(0.0, device=device, dtype=T.float64)
     total = 0
 
-    # Precompute denominators for NDCG (log2 ranks)
     max_k = max(k_list)
     ranks = T.arange(1, max_k + 1, device=device, dtype=T.float32)  # (max_k,)
     discount = T.log2(ranks + 1.0)  # (max_k,)

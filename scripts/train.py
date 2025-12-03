@@ -1,4 +1,6 @@
 
+## adaptado del notebook para correr en terminal
+
 import sys
 import os
 sys.path.insert(0, os.path.abspath('..'))
@@ -6,7 +8,7 @@ sys.path.insert(0, os.path.abspath('..'))
 
 from src.models.decision_transformer import DecisionTransformer
 from src.data.dataset import RecommendationDataset
-from scripts.train import train_decision_transformer
+from src.training.trainer import train_decision_transformer
 import pickle
 import numpy as np
 import torch as T
